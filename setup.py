@@ -33,9 +33,8 @@ setup(
 		'Application Framework :: Liquirizia :: DataAccessObject :: AWS :: OpenSearch',
 	],
 	install_requires=[
-		'Liquirizia@git+https://github.com/team-of-mine-labs/Liquirizia.git',
+		'Liquirizia@git+https://github.com/yong5eon/Liquirizia.git',
 		'elasticsearch==7.10.1',
 	],
-	url='https://github.com/team-of-mine-labs/Liquirizia',
 	python_requires='>=3.8'
 )
