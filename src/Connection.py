@@ -1,14 +1,14 @@
 # -*- coding: utf-8 -*-
 
-from Liquirizia.DataAccessObject import DataAccessObject as DataAccessObjectBase
+from Liquirizia.DataAccessObject import Connection as BaseConnection
 from Liquirizia.DataAccessObject.Properties.Index import Index
 
-from Liquirizia.DataAccessObject.DataAccessObjectError import DataAccessObjectError
+from Liquirizia.DataAccessObject import Error
 from Liquirizia.DataAccessObject.Errors import *
 
-from .DataAccessObjectConfiguration import DataAccessObjectConfiguration
-from .DataAccessObjectFormatEncoder import DataAccessObjectFormatEncoder
-from .DataAccessObjectFormatDecoder import DataAccessObjectFormatDecoder
+from .Configuration import Configuration
+from .Encoder import Encoder
+from .Decoder import Decoder
 
 from Liquirizia.Util.Dictionary import Replace
 
@@ -27,17 +27,15 @@ __all__ = (
 )
 
 
-class DataAccessObject(DataAccessObjectBase, Index):
-	"""
-	Data Access Object Class for OpenSearch of AWS
-	"""
+class Connection(BaseConnection, Index):
+	"""Connection Class for AWS OpenSearch"""
 
-	def __init__(self, conf: DataAccessObjectConfiguration, decoder=DataAccessObjectFormatDecoder(), encoder=DataAccessObjectFormatEncoder()):
+	def __init__(self, conf: Configuration, decoder=Decoder(), encoder=Encoder()):
 		self.conf = conf
 		self.decoder = decoder
 		self.encoder = encoder
 
-		if not isinstance(conf, DataAccessObjectConfiguration):
+		if not isinstance(conf, Configuration):
 			raise RuntimeError('{} is not DataAccessConfiguration for OpenSearch')
 
 		self.client = None
@@ -71,11 +69,11 @@ class DataAccessObject(DataAccessObjectBase, Index):
 				retry_on_timeout=self.conf.retry,
 			)
 		except ElasticSearchConnectionTimeout as e:
-			raise DataAccessObjectConnectionTimeoutError(error=e)
+			raise ConnectionTimeoutError(error=e)
 		except ElasticSearchConnectionError as e:
-			raise DataAccessObjectConnectionError(error=e)
+			raise ConnectionError(error=e)
 		except Exception as e:
-			raise DataAccessObjectError(str(e), error=e)
+			raise Error(str(e), error=e)
 		return
 
 	def close(self):
@@ -131,35 +129,35 @@ class DataAccessObject(DataAccessObjectBase, Index):
 
 			res = self.client.indices.create(index=index, body=body, ignore=excepts)
 			if 'status' in res and 'error' in res:
-				raise DataAccessObjectError(res['error']['reason'])
+				raise Error(res['error']['reason'])
 		except ElasticSearchConnectionTimeout as e:
-			raise DataAccessObjectConnectionTimeoutError(error=e)
+			raise ConnectionTimeoutError(error=e)
 		except ElasticSearchConnectionError as e:
-			raise DataAccessObjectConnectionError(error=e)
+			raise ConnectionError(error=e)
 		except Exception as e:
-			raise DataAccessObjectError(str(e), error=e)
+			raise Error(str(e), error=e)
 		return
 
 	def delete(self, index, excepts=(400, 404)):
 		try:
 			self.client.indices.delete(index, ignore=excepts)
 		except ElasticSearchConnectionTimeout as e:
-			raise DataAccessObjectConnectionTimeoutError(error=e)
+			raise ConnectionTimeoutError(error=e)
 		except ElasticSearchConnectionError as e:
-			raise DataAccessObjectConnectionError(error=e)
+			raise ConnectionError(error=e)
 		except Exception as e:
-			raise DataAccessObjectError(str(e), error=e)
+			raise Error(str(e), error=e)
 		return
 
 	def total(self, index):
 		try:
 			return self.client.count(index)
 		except ElasticSearchConnectionTimeout as e:
-			raise DataAccessObjectConnectionTimeoutError(error=e)
+			raise ConnectionTimeoutError(error=e)
 		except ElasticSearchConnectionError as e:
-			raise DataAccessObjectConnectionError(error=e)
+			raise ConnectionError(error=e)
 		except Exception as e:
-			raise DataAccessObjectError(str(e), error=e)
+			raise Error(str(e), error=e)
 
 	def set(self, index, doc, type=None, id=None):
 		try:
@@ -170,11 +168,11 @@ class DataAccessObject(DataAccessObjectBase, Index):
 				body=Replace(doc, fn=self.encoder)
 			)
 		except ElasticSearchConnectionTimeout as e:
-			raise DataAccessObjectConnectionTimeoutError(error=e)
+			raise ConnectionTimeoutError(error=e)
 		except ElasticSearchConnectionError as e:
-			raise DataAccessObjectConnectionError(error=e)
+			raise ConnectionError(error=e)
 		except Exception as e:
-			raise DataAccessObjectError(str(e), error=e)
+			raise Error(str(e), error=e)
 		return
 
 	def get(self, index, id):
@@ -187,11 +185,11 @@ class DataAccessObject(DataAccessObjectBase, Index):
 		except ElasticSearchNotFound as e:
 			return None
 		except ElasticSearchConnectionTimeout as e:
-			raise DataAccessObjectConnectionTimeoutError(error=e)
+			raise ConnectionTimeoutError(error=e)
 		except ElasticSearchConnectionError as e:
-			raise DataAccessObjectConnectionError(error=e)
+			raise ConnectionError(error=e)
 		except Exception as e:
-			raise DataAccessObjectError(str(e), error=e)
+			raise Error(str(e), error=e)
 
 	def exists(self, index, id, type=None):
 		try:
@@ -201,11 +199,11 @@ class DataAccessObject(DataAccessObjectBase, Index):
 				doc_type=type
 			)
 		except ElasticSearchConnectionTimeout as e:
-			raise DataAccessObjectConnectionTimeoutError(error=e)
+			raise ConnectionTimeoutError(error=e)
 		except ElasticSearchConnectionError as e:
-			raise DataAccessObjectConnectionError(error=e)
+			raise ConnectionError(error=e)
 		except Exception as e:
-			raise DataAccessObjectError(str(e), error=e)
+			raise Error(str(e), error=e)
 
 	def query(self, index, query, page=None, pos=None, size=None, aggs=None, sort=None, type=None):
 		try:
@@ -225,11 +223,11 @@ class DataAccessObject(DataAccessObjectBase, Index):
 			res = self.client.search(index=index, doc_type=type, body=body)
 			return [Replace(hit['_source'], fn=self.decoder) for hit in res['hits']['hits']], res['hits']['total']['value'], res['aggregations'] if 'aggregations' in res else None
 		except ElasticSearchConnectionTimeout as e:
-			raise DataAccessObjectConnectionTimeoutError(error=e)
+			raise ConnectionTimeoutError(error=e)
 		except ElasticSearchConnectionError as e:
-			raise DataAccessObjectConnectionError(error=e)
+			raise ConnectionError(error=e)
 		except Exception as e:
-			raise DataAccessObjectError(str(e), error=e)
+			raise Error(str(e), error=e)
 
 	def count(self, index, query, aggs=None, type=None):
 		try:
@@ -243,8 +241,8 @@ class DataAccessObject(DataAccessObjectBase, Index):
 			res = self.client.search(index=index, doc_type=type, body=body)
 			return res['hits']['total']['value']
 		except ElasticSearchConnectionTimeout as e:
-			raise DataAccessObjectConnectionTimeoutError(error=e)
+			raise ConnectionTimeoutError(error=e)
 		except ElasticSearchConnectionError as e:
-			raise DataAccessObjectConnectionError(error=e)
+			raise ConnectionError(error=e)
 		except Exception as e:
-			raise DataAccessObjectError(str(e), error=e)
+			raise Error(str(e), error=e)

@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 
-from .DataAccessObjectConfiguration import DataAccessObjectConfiguration
-from .DataAccessObject import DataAccessObject
+from .Configuration import Configuration
+from .Connection import Connection
 
 __all__ = (
-	'DataAccessObjectConfiguration',
-	'DataAccessObject',
+	'Configuration',
+	'Connection',
 )
