@@ -3,11 +3,11 @@
 from datetime import datetime, date
 
 __all__ = (
-	'DataAccessObjectFormatEncoder'
+	'Encoder'
 )
 
 
-class DataAccessObjectFormatEncoder(object):
+class Encoder(object):
 	def __call__(self, o):
 		if isinstance(o, (date, datetime)):
 			return o.isoformat()

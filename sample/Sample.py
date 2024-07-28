@@ -1,23 +1,25 @@
 # -*- coding: utf-8 -*-
 
-from Liquirizia.DataAccessObject import DataAccessObjectHelper
-
-from Liquirizia.DataAccessObject.Implements.AWS.OpenSearch import DataAccessObject, DataAccessObjectConfiguration
+from Liquirizia.DataAccessObject import Helper
+from Liquirizia.DataAccessObject.Implements.AWS.OpenSearch import (
+	Configuration,
+	Connection
+)
 
 if __name__ == '__main__':
 
 	# Set connection
-	DataAccessObjectHelper.Set(
+	Helper.Set(
 		'Sample',
-		DataAccessObject,
-		DataAccessObjectConfiguration(
+		Connection,
+		Configuration(
 			host='127.0.0.1',
 			port=9200
 		)
 	)
 
 	# Get connection
-	con = DataAccessObjectHelper.Get('Sample')
+	con = Helper.Get('Sample')
 
 	con.delete('sample')
 	con.create(

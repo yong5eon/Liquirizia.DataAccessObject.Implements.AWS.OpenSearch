@@ -1,17 +1,15 @@
 # -*- coding: utf-8 -*-
 
-from Liquirizia.DataAccessObject import DataAccessObjectConfiguration as DataAccessObjectConfigurationBase
+from Liquirizia.DataAccessObject import Configuration as BaseConfiguration
 from ssl import create_default_context
 
 __all__ = (
-	'DataAccessObjectConfiguration'
+	'Configuration'
 )
 
 
-class DataAccessObjectConfiguration(DataAccessObjectConfigurationBase):
-	"""
-	Data Access Object Configuration Class for ElasticSearch
-	"""
+class Configuration(BaseConfiguration):
+	"""Configuration Class for AWS OpenSearch"""
 
 	def __init__(self, host, port, username=None, password=None, ssl=False):
 		self.scheme = 'https' if ssl else 'http',
